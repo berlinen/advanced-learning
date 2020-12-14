@@ -38,22 +38,55 @@ class CustomPromise<T> {
     this._value = err;
   }
 
-  _then(onFulfilled: (val) => void, onRejected: (err) => void): CustomPromise<T> {
+  _then(onFulfilled: (val) => any, onRejected: (err) => any): CustomPromise<T> {
     const {_status, _value} = this || {};
-    switch(_status) {
-      case PENDING:
-        this._fulfilledQueues.push(onFulfilled);
-        this._rejectedQueues.push(onRejected);
-        break;
-      case FULFILLED:
-        onFulfilled(_value);
-        break;
-      case REJECTED:
-        onRejected(_value);
-        break;
-    };
+    return new CustomPromise((onFulFilledNext, onRejectedNext) => {
+      let fulFilled = value => {
+        try {
+          if(!isFunction(onFulfilled)) {
+            onFulFilledNext(value);
+          } else {
+            let res = onFulfilled(value);
+            // 如果当前回调函数返回MyPromise对象，必须等待其状态改变后在执行下一个回调
+            if(res instanceof CustomPromise) {
+              res._then(onFulFilledNext, onRejectedNext)
+            }
+          }
+        } catch (err) {
+          // 如果函数执行出错，新的Promise对象的状态为失败
+          onRejectedNext(err);
+        }
+      }
 
-    return new CustomPromise((onFulFilledNext, onRejectedNext) => {});
+      let rejected = error => {
+        try {
+          if(!isFunction(onRejected)) {
+            onRejectedNext(error);
+          } else {
+            let res = onRejected(error);
+            if(res instanceof CustomPromise) {
+              res._then(onFulFilledNext, onRejectedNext)
+            }
+          }
+        } catch (err) {
+          // 如果函数执行出错，新的Promise对象的状态为失败
+          onRejectedNext(err)
+        }
+      }
+
+      switch(_status) {
+        case PENDING:
+          this._fulfilledQueues.push(fulFilled);
+          this._rejectedQueues.push(rejected);
+          break;
+        case FULFILLED:
+          fulFilled(_value);
+          break;
+        case REJECTED:
+          rejected(_value);
+          break;
+      }
+    })
   }
 }
 
