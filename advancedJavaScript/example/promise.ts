@@ -13,7 +13,7 @@ class CustomPromise<T> {
   _fulfilledQueues: Function[];
   _rejectedQueues: Function[];
 
-  constructor (handle:(r, j) => void) {
+  constructor (handle?:(r, j) => void) {
     this._handleFunc = handle;
     this._status =PENDING;
     this._value = undefined;
@@ -28,17 +28,32 @@ class CustomPromise<T> {
 
   _resolve(val: T) {
     if(this._status !== PENDING) return;
-    this._status = FULFILLED;
-    this._value = val;
+    const run = () => {
+      this._status = FULFILLED;
+      this._value = val;
+      let cb;
+      while(cb = this._fulfilledQueues.shift()) {
+        cb(val);
+      }
+    }
+    setTimeout(() => run(), 0)
   }
 
   _reject(err: Error) {
     if(this._status !== PENDING) return;
-    this._status = REJECTED;
-    this._value = err;
+    const run = () => {
+      this._status = REJECTED;
+      this._value = err;
+      let cb;
+      while(cb === this._rejectedQueues.shift()) {
+        cb(err);
+      }
+    };
+    setTimeout(() => run(), 0)
+
   }
 
-  _then(onFulfilled: (val) => any, onRejected: (err) => any): CustomPromise<T> {
+  _then(onFulfilled?: (val) => any, onRejected?: (err) => any): CustomPromise<T> {
     const {_status, _value} = this || {};
     return new CustomPromise((onFulFilledNext, onRejectedNext) => {
       let fulFilled = value => {
@@ -46,9 +61,11 @@ class CustomPromise<T> {
           if(!isFunction(onFulfilled)) {
             onFulFilledNext(value);
           } else {
+
             let res = onFulfilled(value);
             // 如果当前回调函数返回MyPromise对象，必须等待其状态改变后在执行下一个回调
             if(res instanceof CustomPromise) {
+              console.log('on2')
               res._then(onFulFilledNext, onRejectedNext)
             }
           }
@@ -89,6 +106,27 @@ class CustomPromise<T> {
     })
   }
 }
+
+// let promise1 = new CustomPromise((resolve, reject) => {
+//   resolve(1)
+// })
+
+let promise1 = new CustomPromise<number>();
+
+promise1._resolve(2)
+
+const promise2 = promise1._then(res => {
+  console.log('res1', res)
+})._then(() => {
+  console.log('res2', 2)
+})
+
+
+// promise1._resolve('resolve')
+
+// console.log()
+
+
 
 // const promise1 = CustomPromise((resolve, reject) => {
 //   resolve();
