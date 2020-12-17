@@ -20,7 +20,6 @@ const pick: Pick<Typea, 'id'> = {
   id: 4
 }
 
-
 const omit: Omit<Typea, 'sex'> = {
   id: 5,
   name: 'name'

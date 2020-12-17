@@ -11,5 +11,118 @@ const dynamicFunc = (cb) => {
 dynamicFunc(() => console.log('on'));
 ```
 
+### Promise 基础
+
+通过 new Promise() 可构造一个Promise, 接受一个handle参数,
+
+handle 有两个参数 resolve/reject, 对用 已完成/已拒绝
+
+```js
+new Promise(handle)
+
+Reflect.construct(Promise, [handle])
+```
+
+```js
+function promise1 () {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 定义异步的内容
+      console.log('resolve 1s 后输出')
+      // 输出完成后，调用函数传入的 resolve 函数，将该 promise 实例标记为已完成，当前 promise 串 行继续执行
+      resolve()
+    }, 1000)
+  })
+}
+
+const promise2 = () => Reflect.construct(Promise, [(resolve, reject) => {
+  setTimeout(() => {
+    console.log('2s 后输出');
+    resolve();
+  }, 2000)
+}])
+
+// 两个 promise 实例，串联起来即可写为:
+
+promise1().then(() => promise2());
+
+// or
+
+promise1.then(promise2);
+```
+
+当前 promise 如果状态变为已完成(执行了 resolve 方法)，那么就会去执行 then 方 法中的下一个 promise 函数。
+
+如果 promise变为已拒绝状态（执行reject），那么就会进入后续的异常处理函数中
+
+```js
+const promise3 = () => Reflect.construct(Promise, [(resolve, reject) => {
+  const random = Math.random() * 10
+  setTimeout(() => {
+    if(random > 5) {
+      resolve(random)
+    } else {
+      reject(random)
+    }
+  }, 1000)
+}])
+
+const onResolve = (val) => {
+  console.log('已完成，输出', val);
+}
+
+const onReject = val => {
+  console.log('已拒绝，输出', val);
+}
+
+
+// promise 的 then 也可以接受两个函数，第一个参数为 resolve 后执行，第二个函数为 reject 后执行
+// promise3().then(onResolve, onReject)
+
+// 也可以通过 .catch 方法拦截状态变为已拒绝时的 promise
+// promise3().catch(onReject).then(onResolve)
+
+//也可以通过 try catch 进行拦截状态变为已拒绝的 promise
+
+try {
+  promise3().then(onResolve);
+} catch (e) {
+  onReject(e)
+}
+```
+
+这个例子使用了三种方式拦截最终变为「已拒绝」状态的 promise，分别是使用 then 的第二个参数，使 用 .catch 方法捕获前方 promise 抛出的异常，使用 try catch 拦截代码块中 promise 抛出的异常
+
+在改变 promise 状态时调用 resolve 和 reject 函数的时候，也可以给下一步 then 中执行的函数传递参数
+
+#### 总结
+
+1. romise 会有三种状态，「进行中」「已完成」和「已拒绝」，进行中状态可以更改为已完成或 已拒绝，已经更改过状态后无法继续更改(例如从已完成改为已拒绝)。
+
+2. ES6 中的 Promise 构造函数，我们构造之后需要传入一个函数，他接受两个函数参数，执行第一 个参数之后就会改变当前 promise 为「已完成」状态，执行第二个参数之后就会变为「已拒绝」 状态。
+
+3. 通过 .then 方法，即可在上一个 promise 达到已完成时继续执行下一个函数或 promise。同时通过 resolve 或 reject 时传入参数，即可给下一个函数或 promise 传入初始值。
+
+4. 已拒绝的 promise，后续可以通过 .catch 方法或是 .then 方法的第二个参数或是 try catch 进行捕 获。
+
+### 封装异步操作为 promise
+
+我们可以将任何接受回调的函数封装为一个 promise，下面举几个简单的例子来说明。
+
+```js
+function dynamicFunc(cb) {
+  setTimeout(() => {
+    console.log('1s 后显示');
+    cb()
+  }, 1000)
+}
+
+const callback = () => console.log('异步结束后 log')
+
+// 用传入回调函数执行
+
+dynamicFunc(callback)
+```
+
 ### promise/A+ 规范详解
 
