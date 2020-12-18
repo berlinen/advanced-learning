@@ -271,4 +271,56 @@ promise2
   )
 // promise 2 已完成
 ```
+#### promise 的解决过程
 
+Promise 解决过程是一个抽象的操作，其需输入一个 promise 和一个值，我们表示为 [[Resolve]]
+
+(promise, x)(这句话的意思就是把 promise resolve 了，同时传入 x 作为值)
+
+```js
+promise.then(
+  function(x) {
+    console.log('会执行这个函数，同时传入 x 变量的值', x);
+  }
+);
+```
+
+如果 x 有 then 方法且看上去像一个 Promise ，解决程序即尝试使 promise 接受 x 的状态;否则其用 x 的 值来执行 promise 。
+
+1. 如果 promise 和 x 指向同一对象，以 TypeError 为据因拒绝执行 promise
+
+2. 如果 x 为 promise
+
+  . 如果 x 处于等待态， promise 需保持为等待态直 至 x 被执行或拒绝
+
+  . 如果 x 处于已完成态，用相同的值执行 promise
+
+  . 如果 x 处于拒绝态，用相同的据因拒绝 promise
+
+```ts
+const promise1: () => Promise<void> = () => Reflect.construct(Promise, [(resolve) => {
+  setTimeout(() => {
+    console.log(1);
+    resolve();
+  }, 1000)
+}])
+
+const promise2: () => Promise<void> = () => new Promise((resolve) => {
+  setTimeout(() => {
+    console.log(2);
+    resolve();
+  }, 2000);
+})
+
+promise1()
+  .then(() => promise2())
+  .then(
+    () => console.log('已完成'),
+    () => console.log('已拒绝')
+  )
+/**
+ * back
+ * 1
+ * 2
+ * 已完成
+```
