@@ -165,7 +165,6 @@ ajaxRequest('/ajax.json', function() {console.log('成功')}, function() {consol
 ```ts
 const ajaxRequestPromise: (url: string) => Promise<unknown> = (url) => new Promise((resolve, reject) => {
   const client: XMLHttpRequest = new XMLHttpRequest();
-  console.log(this)
   client.open("GET", url);
   client.onreadystatechange = function () {
     if(this.readyState !== 4) return;
