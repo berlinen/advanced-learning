@@ -21,5 +21,18 @@ function* gen() {
 
 const g = gen();
 
-g.next()
-g.next()
+// g.next()
+// g.next()
+
+// s使用async await
+
+(async function () {
+  try {
+    const res = await promise1();
+    await promise2()
+    console.log('已完成')
+  } catch (e) {
+    console.log(e);
+    console.log('已拒绝')
+  }
+}())
