@@ -184,3 +184,129 @@ module.exports = function () {
 最后，即使没检测出来 当前环境的模块化规范，我们也可以直接把模块内容挂载在全局对象上，这样也能加载到模块导出的结果。
 
 ### ESModule 规范
+
+前面我们说到的 CommonJS 规范和 AMD 规范有这么几个特点:
+
+1. 语言上层的运行环境中实现的模块化规范，模块化规 范由环境自己定义。
+
+2. 相互之间不能共用模块。例如不能在Node.js运行 AMD 模块，不能直接在浏览器运行 CommonJS 模 块。
+
+在 EcmaScript 2015 也就是我们常说的 ES6 之后，JS 有 了语言层面的模块化导入导出关键词与语法以及与之匹 配的 ESModule 规范。使用 ESModule 规范，我们可以 通过 import 和 export 两个关键词来对模块进行导入 与导出。
+
+还是之前的例子，使用 ESModule 规范和新的关键词就 需要这样定义:
+
+```js
+// index
+import './moduleA'
+import m from './moduleB'
+console.log(m)
+
+// moduleA.js
+import m from './moduleB'
+setTimeout(() => console.log(m), 1000)
+
+// moduleB
+var m = new Date().getTime();
+export default m;
+```
+
+ESModule 与 CommonJS 和 AMD 最大的区别在于， ESModule 是由 JS 解释器实现，而后两者是在宿主环境 中运行时实现。
+
+ESModule 导入实际上是在语法层面新 增了一个语句，而 AMD 和 CommonJS 加载模块实际上 是调用了 require 函数。
+
+```js
+// 这是一个新的语法，我们没办法兼容，如果浏览器无法 解析就会报语法错误
+import moduleA from "./moduleA";
+// 我们只需要新增加一个 require 函数，就可以首先 保证 AMD 或 CommonJS 模块不报语法错误
+function require() {}
+const moduleA = require("./moduleA");
+```
+
+ESModule 规范支持通过这些方式导入导出代码，具体 使用哪种情况得根据如何导出来决定:
+
+```js
+
+import { var1, var2 } from './moduleA';
+
+import * as vars from './moduleB';
+
+import m from './moduleC';
+
+export default {
+  var1: 1,
+  var2: 2
+}
+export const var1 = 1;
+
+const obj = { var1, var2};
+
+export default obj
+```
+
+这里又一个地方需要额外指出，import {var1} from "./moduleA" 这里的括号并不代表获取结果是个对象， 虽然与 ES6 之后的对象解构语法非常相似。
+
+```js
+
+// 这些用法都是错误的，这里不能使用对象默认值，对象 key 为变量这些语法
+import {var1 = 1} from "./moduleA"
+
+import {[test]: a} from "./moduleA";
+
+// 这个才是 ESModule 导入语句种正确的重命名方式
+
+import {var1 as customVar1} from "./moduleA";
+
+// 这些用法都是合理的，因为 CommonJS 导出的就是个 对象，我们可以用操作对象的方式来操作导出结果
+
+const {var1 = 1} = require("./moduleA");
+
+const {[test]: var1 = a} = require("./moduleA");
+
+// 这种用法是错误的，因为对象不能这么使用
+
+const {var1 as customVar1} = require("./moduleA");
+```
+
+每个 JS 的运行环境都有一个解析器，否则这个环境也不 会认识 JS 语法。它的作用就是用 ECMAScript 的规范去 解释 JS 语法，也就是处理和执行语言本身的内容，例如 按照逻辑正确执行 var a = "123";，function func() {console.log("hahaha");} 之类的内容
+
+在解析器的上层，每个运行环境都会在解释器的基础上 封装一些环境相关的 API。例如 Node.js 中的 global 对象、process 对象，浏览器中的 window 对 象，document 对象等等。这些运行环境的 API 受到各 自规范的影响，例如浏览器端的 W3C 规范，它们规定 了 window 对象和 document 对象上的 API 内容，以使 得我们能让 document.getElementById 这样的 API 在 所有浏览器上运行正常。
+
+事实上，类似于 setTimeout 和 console 这样的 API，大部分也不是 JS Core 层面的，只不过是所有运行 环境实现了相似的结果。
+
+setTimeout 在 ES7 规范之后才进入 JS Core 层面，在 这之前都是浏览器和 Node.js 等环境进行实现。
+
+console 类似 promise，有自己的规范，但实际上也 是环境自己进行实现的，这也就是为什么 Node.js 的
+console.log 是异步的而浏览器是同步的一个原因。同 时，早期的 Node.js 版本是可以使用 sys.puts 来代替console.log 来输出至 stdout 的。
+
+
+ESModule 就属于 JS Core 层面的规范，而 AMD， CommonJS 是运行环境的规范。
+
+所以，想要使运行环境 支持 ESModule 其实是比较简单的，只需要升级自己环 境中的 JS Core 解释引擎到足够的版本，引擎层面就能 认识这种语法，从而不认为这是个 语法错误(syntax error) ，运行环境中只需要做一些兼容工作即可。
+
+Node.js 在 V12 版本之后才可以使用 ESModule 规范的 模块，在 V12 没进入 LTS 之前，我们需要加上 -- experimental-modules 的 flag 才能使用这样的特 性，也就是通过 node --experimental-modules index.js 来执行。浏览器端 Chrome 61 之后的版本可 以开启支持 ESModule 的选项，只需要通过 `` 这样的 标签加载即可。
+
+这也就是说，如果想在 Node.js 环境中使用 ESModule，就需要升级 Node.js 到高版本，这相对来 说比较容易，毕竟服务端 Node.js 版本控制在开发人员 自己手中。但浏览器端具有分布式的特点，是否能使用 这种高版本特性取决于用户访问时的版本，而且这种解 释器语法层面的内容无法像 AMD 那样在运行时进行兼 容，所以想要直接使用就会比较麻烦。
+
+### 后模块化时代
+
+通过前面的分析我们可以看出来，使用 ESModule 的模 块明显更符合 JS 开发的历史进程，因为任何一个支持 JS 的环境，随着对应解释器的升级，最终一定会支持 ESModule 的标准。但是，WEB 端受制于用户使用的浏 览器版本，我们并不能随心所欲的随时使用 JS 的最新特 性。为了能让我们的新代码也运行在用户的老浏览器 中，社区涌现出了越来越多的工具，它们能静态将高版 本规范的代码编译为低版本规范的代码，最为大家所熟 知的就是 babel。
+
+它把 JS Core 中高版本规范的语法，也能按照相同语义 在静态阶段转化为低版本规范的语法，这样即使是早期 的浏览器，它们内置的 JS 解释器也能看懂。
+
+然后，不幸的是，对于模块化相关的 import 和 export 关键字，babel 最终会将它编译为包含 require 和 exports 的 CommonJS 规范
+
+这就造成了另一个问题，这样带有模块化关键词的模 块，编译之后还是没办法直接运行在浏览器中，因为浏 览器端并不能运行 CommonJS 的模块。为了能在 WEB 端直接使用 CommonJS 规范的模块，除了编译之外， 我们还需要一个步骤叫做打包(bundle)。
+
+所以打包工具比如 webpack / rollup ，编译工具 babel 它们之间的区别和作用就很清楚了
+
++ 打包工具主要处理的是 JS 不同版本间模块化的区别
+
++ 译工具主要处理的是 JS 版本间语义的问题
+
+如果使用了 ESModule : 必须使用 webpack 和 babel
+
+如果是 AMD 或 CommonJS : 只用 webpack
+
+
+
+
