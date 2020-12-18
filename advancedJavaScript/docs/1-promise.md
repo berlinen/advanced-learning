@@ -324,3 +324,120 @@ promise1()
  * 2
  * 已完成
 ```
+
+如果 x 为 Object 或 function(不常⻅)
+
+1. 首先尝试执行 x.then
+
+2. 如果取 x.then 的值时抛出错误 e ，则以 e 为据 因拒绝 promise
+
+3. 如果 then 是函数，将 x 作为函数的作用域 this 调用。传递两个回调函数作为参数，第一个参数叫 做 resolvePromise ，第二个参数叫做 ejectPromise
+
+  + 如果 resolvePromise 以值 y 为参数被调用，则运行 [[Resolve]](promise, y)
+
+  + 如果 rejectPromise 以据因 r 为参数被调用，则以据因 r 拒绝 promise
+
+  + 如果 resolvePromise 和 rejectPromise 均 被调用，或者被同一参数调用了多次，则优先 采用首次调用并忽略其他的调用
+
+  + 如果调用 then 方法抛出了异常 e
+
+    + 如果 resolvePromise 或 rejectPromise 已经被调用，则忽略
+
+    + 否则以 e 为据因拒绝 promise
+
+  + 如果 x 不为对象或者函数，以 x 为参数将 promise 变为已完成状态(重要且常⻅)
+
+#### promise resolve
+
+返回一个 promise 实例，并将它的状态设置为已完成， 同时将他的结果作为传入 promise 实例的值
+
+```ts
+const promise1 = Promise.resolve(123);
+
+promise1
+  .then((val) => {
+    console.log('已完成', val)
+  })
+// back 已完成 123
+```
+
+#### promise reject
+
+返回一个 promise 实例，并将它的状态设置为已拒绝， 同时也将他的结果作为原因传入 onRejected 函数
+
+```ts
+const promise1 = Promise.reject(123);
+
+promise1
+  .then(
+    null,
+    (val) => {
+      console.log('已拒绝', val)
+    }
+  )
+// bacn: 已拒绝 123
+```
+
+#### promise all
+
+返回一个 promise 实例，接受一个数组，里面含有多个 promise 实例，当所有 promise 实例都成为已完成状态 时，进入已完成状态，否则进入已拒绝状态。
+
+```ts
+const promise1: () => Promise<void> = () => Reflect.construct(Promise, [(resolve) => {
+  setTimeout(() => {
+    console.log('已完成 1')
+    resolve()
+  }, 1000);
+}])
+
+const promise2: () => Promise<void> = () => Reflect.construct(Promise, [(resolve) => {
+  setTimeout(() => {
+    console.log('已完成 2')
+    resolve()
+  }, 2000);
+}])
+
+Promise.all([promise1(), promise2()]).then(() => {
+  console.log('都已经完成')
+})
+/*
+* back
+* 已完成 1
+* 已完成 2
+* 都已经完成
+*/
+```
+
+#### promise.race
+
+返回一个 promise 实例，接受一个数组，里面含有多个 promise 实例，当有一个 promise 实例状态改变时，就 进入该状态且不可改变。这里所有的 promise 实例为竞 争关系，只选择第一个进入改变状态的 promise 的值。
+
+```ts
+const promise1: () => Promise<void> = () => Reflect.construct(Promise, [(resolve) => {
+  setTimeout(() => {
+    console.log('已完成 1')
+    resolve('promise 1')
+  }, 1000);
+}])
+
+const promise2: () => Promise<void> = () => Reflect.construct(Promise, [(resolve) => {
+  setTimeout(() => {
+    console.log('已完成 2')
+    resolve('promise 2')
+  }, 2000);
+}])
+
+Promise.race([promise1(), promise2()]).then((val) => {
+  console.log('有一个 promise 状态已经改变', val)
+})
+/**
+ * back
+ * 已完成 1
+ * 有一个 promise 状态已经改变 promise 1
+ * 已完成 2
+ *
+```
+
+
+
+
