@@ -124,5 +124,64 @@ const callback = () => console.log('异步结束后 log')
 dynamicFunc(callback)
 ```
 
+promise 版本
+
+```ts
+const callback = () => console.log('异步结束后 log')
+
+const promise: () => Promise<void> = () => new Promise((resolve) => {
+  setTimeout(() => {
+    console.log('1s 后显示');
+    resolve();
+  }, 1000)
+})
+
+promise().then(() => callback())
+```
+
+发送 ajax 请求也可以进行封装:
+
+```ts
+const ajaxRequest: (url, success, fail) => void = (url: string, success: (res: unknown) =>
+{}, fail: (err?: unknown) => void) => {
+  const client: XMLHttpRequest = new XMLHttpRequest();
+  client.open("GET", url);
+  client.onreadystatechange = function () {
+    if(this.readyState !== 4) return;
+    if(this.status === 200) {
+      success(this.response)
+    } else {
+      fail(new Error(this.statusText));
+    };
+  }
+  client.send();
+}
+
+ajaxRequest('/ajax.json', function() {console.log('成功')}, function() {console.log('失败')});
+```
+
+调用 ajax 方法时需要传入 success 和 fail 的回调函数进行调用。我们可以不传入回调函数， 通过封装 promise 的方式，在原来的执行回调函数的地 方更改当前 promise 的状态，就可以通过链式调用。
+
+```ts
+const ajaxRequestPromise: (url: string) => Promise<unknown> = (url) => new Promise((resolve, reject) => {
+  const client: XMLHttpRequest = new XMLHttpRequest();
+  console.log(this)
+  client.open("GET", url);
+  client.onreadystatechange = function () {
+    if(this.readyState !== 4) return;
+    if(this.status === 200) {
+      resolve(this.response);
+    } else {
+      reject(new Error(this.statusText));
+    };
+  };
+
+  client.send();
+})
+
+ajaxRequestPromise('./ajax.json')
+  .then(() => console.log('success'),() => console.log('fail'))
+```
+
 ### promise/A+ 规范详解
 
