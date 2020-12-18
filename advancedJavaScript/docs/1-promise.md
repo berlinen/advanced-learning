@@ -182,5 +182,93 @@ ajaxRequestPromise('./ajax.json')
   .then(() => console.log('success'),() => console.log('fail'))
 ```
 
+#### 总结
+
+1. 我们可以轻松的把任何一个函数或者是异步函数改为 promise，尤其是异步函数，改为 promise 之后即可 进行链式调用，增强可读性。
+
+2. 将带有回调函数的异步改为promise也很简单，只 需要在内部实例化 promise 之后，在原来执行回调 函数的地方执行对应的更改 promise 状态的函数即 可。
+
 ### promise/A+ 规范详解
+
+thenable then 定义了一个then方法的对象或函数
+
+值（value）: 指任何 JavaScript 的合法值(包括 undefined , thenable 和 promise);
+
+异常(exception):是使用 throw 语句抛出的一个 值。
+
+原因(reason):表示一个 promise 的拒绝原因。
+
+#### promise 状态
+
+pending 等待 => 可变为 fulfilled or rejected
+
+fulfilled 已完成 => promise 需满足以下条件: 1. 不能迁 移至其他任何状态 2. 必须拥有一个不可变的值
+
+rejected 已拒绝 => promise 需满足以下条件:1. 不能迁 移至其他任何状态 2. 必须拥有一个不可变的原因
+
+#### thenable
+
+一个 promise 必须提供一个 then 方法以访问其当前值和原因。
+
+promise 的 then 方法接受两个参数
+
+promise.then(onFulfilled, onRejected) 他 们都是可选参数，同时他们都是函数，如果onFulfilled 或 onRejected 不是函数，则需要忽略 他们。
+
+##### onFulfilled 是一个函数
+
+1. 当 promise 执行结束后其必须被调用，其第一个参数为 promise 的值
+
+2. 在 promise 执行结束前其不可被调用
+
+3. 其调用次数不可超过一次
+
+##### onRejected 是一个函数
+
+1. 当 promise 被拒绝执行后其必须被调用，其第一 个参数为 promise 的原因
+
+2. 在 promise 被拒绝执行前其不可被调用
+
+3. 其调用次数不可超过一次
+
+##### 在执行上下文堆栈仅包含平台代码之前，不得调用 onFulfilled 或 onRejected
+
+##### onFulfilled 和 onRejected 必须被作为普通函数 调用(即非实例化调用，这样函数内部 this非严格 模式下指向 window)
+##### then 方法可以被同一个 promise 调用多次
+
+1. 当 promise 成功执行时，所有 onFulfilled 需 按照其注册顺序依次回调
+
+2. 当 promise 被拒绝执行时，所有的 onRejected 需按照其注册顺序依次回调
+##### then 方法必须返回一个 promise 对象 promise2 = promise1.then(onFulfilled, onRejected);
+
+1. 只要 onFulfilled 或者 onRejected 返回一个 值 x ，promise 2 都会进入 onFulfilled 状态
+
+2. 如果 onFulfilled 或者 onRejected 抛出一个 异常 e ，则 promise2 必须拒绝执行，并返回拒绝原因e
+
+3. 如果 onFulfilled 不是函数且 promise1 状态变 为已完成， promise2 必须成功执行并返回相同 的值
+
+4. 如果 onRejected 不是函数且 promise1 状态变 为已拒绝， promise2 必须执行拒绝回调并返回 相同的拒绝原因
+
+```ts
+const promise1 = new Promise((resolve, reject) => {
+  reject();
+})
+
+const promise2 = promise1.then(
+  null,
+  function() {
+    return  123
+  }
+)
+
+promise2
+  .then(
+    () => {
+      console.log('promise 2 已完成')
+    },
+    () => {
+      console.log('promise2 已拒绝')
+    }
+  )
+// promise 2 已完成
+```
 

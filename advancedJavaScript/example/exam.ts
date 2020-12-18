@@ -1,36 +1,20 @@
-
-
-const ajaxRequest: (url, success, fail) => void = (url: string, success: (res: unknown) =>
-{}, fail: (err?: unknown) => void) => {
-  const client: XMLHttpRequest = new XMLHttpRequest();
-  client.open("GET", url);
-  client.onreadystatechange = function () {
-    if(this.readyState !== 4) return;
-    if(this.status === 200) {
-      success(this.response)
-    } else {
-      fail(new Error(this.statusText));
-    };
-  }
-  client.send();
-}
-
-// ajaxRequest('/ajax.json', function() {console.log('成功')}, function() {console.log('失败')});
-
-const ajaxRequestPromise: (url: string) => Promise<unknown> = (url) => new Promise((resolve, reject) => {
-  const client: XMLHttpRequest = new XMLHttpRequest();
-  client.open("GET", url);
-  client.onreadystatechange = function () {
-    if(this.readyState !== 4) return;
-    if(this.status === 200) {
-      resolve(this.response);
-    } else {
-      reject(new Error(this.statusText));
-    };
-  };
-
-  client.send();
+const promise1 = new Promise((resolve, reject) => {
+  reject();
 })
 
-ajaxRequestPromise('./ajax.json')
-  .then(() => console.log('success'),() => console.log('fail'))
+const promise2 = promise1.then(
+  null,
+  function() {
+    return  123
+  }
+)
+
+promise2
+  .then(
+    () => {
+      console.log('promise 2 已完成')
+    },
+    () => {
+      console.log('promise2 已拒绝')
+    }
+  )
