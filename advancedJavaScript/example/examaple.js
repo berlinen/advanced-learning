@@ -1,36 +1,20 @@
 function Player(color) {
   this.color = color;
-  if(!Player.total) {
-    Player.total = 0;
-  }
-  Player.total++
 }
 
-let p1 = new Player("white");
-console.log(Player.total);
-let p2 = new Player("black");
-console.log(Player.total); // 2
-
-function ObjectFactory () {
-  let obj = new Object();
-  let Constructor = [].shift.call(arguments);
-  obj.__proto__ = Constructor.protoType;
-  let ret = Constructor.apply(obj, arguments)
-  return typeof ret === 'object' ? obj : ret
+Player.prototype.start = function () {
+  console.log(color + '下棋')
 }
 
-function Parent () {}
-function Child () {
-  Parent.call(this, Array.from(arguments).slice(1))
-}
+const whitePlayer = new Player('white');
+const blackPlayer = new Player('black');
 
-// Child.prototype = new Parent();
+console.log(blackPlayer.__proto__); // Player { start: [Function] }
+console.log(Object.getPrototypeOf(blackPlayer)) // Player { start: [Function] }
+console.log(Reflect.getPrototypeOf(blackPlayer)) // Player { start: [Function] }
+console.log(Object.getPrototypeOf(blackPlayer) === blackPlayer.__proto__) // true
 
-// let TemFunc = function() {};
-// TemFunc.prototype = Parent.prototype;
-// Child.prototype = new TemFunc()
-
-Object.create(Parent.prototype)
-
-
-Child.prototype.constructor = Child;
+console.log(Player.prototype) // Player { start: [Function] }
+console.log(blackPlayer.__proto__ === Player.prototype) // true
+console.log(Player.prototype.constructor === Player) // true
+console.log(Player.__proto__) // [Fucntion]
