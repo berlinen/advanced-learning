@@ -64,4 +64,97 @@ blackPlayer.start();
 
 ⽽而在⽐比较简单的问题⾯面前，⾯面向对象和⾯面向过程其实差异并不不明显，也可以⼀一步⼀一步地按照步 骤来调⽤用。
 
+### Js 中的⾯向对象
+#### 对象包含什什么
+
+⽅法 属性
+#### ⼀一些内置对象
+
+Object Array Date Function RegExp
+##### 普通⽅方式
+
+每一个新对象都要重写一边color start的赋值
+
+```js
+const player = new Object();
+Player.color = 'white';
+Player.start = function() {
+  console.log("white 下棋");
+};
+```
+##### ⼯厂模式，这两种⽅式都⽆法识别对象类型，⽐比如 Player 的类型只是 Object
+
+```js
+function createObject() {
+  const player = new Object();
+  Player.color = 'white';
+  Player.start = function() {
+    console.log("white 下棋");
+  };
+  return Player;
+}
+```
+##### 构造函数/实例例
+
+通过 this 添加的属性和⽅法总是指向当前对象的，所以在实例化的时候，通过 this 添加的属 性和方法都会在内存中复制一份，这样就会造成内存的浪费。
+
+但是这样创建的好处是即使改变了某⼀个对象的属性或⽅法，不会影响其他的对象(因为每⼀个对象都是复制的⼀份)
+
+```js
+function Player (color) {
+  this.color = color;
+  this.start = function () {
+    console.log(color + "下棋");
+  }
+}
+
+const whitePlayer = new Player("white");
+const blackPlayer = new Player("black");
+
+```
+
+ 怎么看函数是不不是在内存中创建了了多次呢?
+
+ ⽐比如 2. 构造函数中，我们可以看到 whitePlayer.start === blackPlayer.start // 输出 false
+
+ ##### 原型
+
+ 通过原型继承的⽅法并不⾃身的，我们要在原型链上一层一层的查找，这样创建的好处是只 在内存中创建⼀次，实例化的对象都会指向这个 prototype 对象。
+
+```js
+function Player (color) {
+  this.color = color;
+}
+
+Player.prototype.start = function () {
+  console.log(color + "下棋")
+}
+
+const whitePlayer = new Player("white");
+const blackPlayer = new Player("black");
+```
+##### 静态属性
+
+是绑定在构造函数上的属性方法，需要通过构造函数访问
+
+⽐比如我们想看⼀一下⼀一共创建了了多少个玩家的实例例
+
+```js
+function Player(color) {
+  this.color = color;
+  if(!Player.total) {
+    Player.total = 0;
+  }
+  Player.total++
+}
+
+let p1 = new Player("white");
+console.log(Player.total);
+let p2 = new Player("black");
+console.log(Player.total); // 2
+```
+
+
+
+
 
