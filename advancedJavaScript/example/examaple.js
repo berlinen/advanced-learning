@@ -18,3 +18,5 @@ console.log(Player.prototype) // Player { start: [Function] }
 console.log(blackPlayer.__proto__ === Player.prototype) // true
 console.log(Player.prototype.constructor === Player) // true
 console.log(Player.__proto__) // [Fucntion]
+console.log(Player.prototype.__proto__) //  {} Object.prototype
+console.log(Player.prototype.__proto__.__proto__) //null
