@@ -11,19 +11,17 @@ function Child (id) {
   Parent.apply(this, Array.from(arguments).slice(1));
   this.id = id;
 }
-// 模拟Object.create的效果
-// 如果直接使⽤用Object.create的话，
-// 可以写成Child.prototype = Object.create(Parent.prototype);
 
-let TemFunc = function () {};
-TemFunc.prototype = Parent.prototype;
-Child.prototype = new TemFunc();
+Child.prototype = Parent.prototype;
 
 Child.prototype.constructor = Child;
 
-const child1 = new Child(1, "c1", ["hahahahahhah"]);
-const child2 = new Child(2, "c2", ["xixixixixixx"])
+console.log(Parent.prototype); // Child { eat: [Function], childEat: [Function] }
 
-child1.eat(); // c1 - eat
-child2.eat(); // c2 - eat
-console.log(child1.eat === child2.eat); // true
+Child.prototype.childEat = function () {
+  console.log(`childEat - ${this.name}`);
+};
+
+const child1 = new Child(1, "c1", ["hahahahahhah"]);
+
+console.log(Parent.prototype); // Child { eat: [Function], childEat: [Function] }
