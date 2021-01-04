@@ -132,3 +132,4 @@ const promise2 = promise1._then(res => {
 //   resolve();
 // });
 
+export {}
