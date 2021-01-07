@@ -114,3 +114,15 @@ var slice = Array.prototype.slice;
 ```
 
 bind 能让调用变的更加简单。
+
+```js
+function demo(a,b) {
+  console.log(arguments) // { '0': 1, '1': 2 }
+  let unboundSlice = Array.prototype.slice;
+  let slice = Function.prototype.call.bind(unboundSlice);
+  let res = slice(arguments, 1)
+  console.log(res) // 2
+}
+
+demo(1,2)
+```
