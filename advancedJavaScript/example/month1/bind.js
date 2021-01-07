@@ -79,17 +79,31 @@
 
 // demo(1,2)
 
-var obj = {
-  num: 10,
-  getCount: function () {
-    return this.num
-  }
+// var obj = {
+//   num: 10,
+//   getCount: function () {
+//     return this.num
+//   }
+// }
+
+// let unboundBind = Function.prototype.bind
+// let bind = Function.prototype.call.bind(unboundBind);
+
+// let getCount = bind(obj.getCount, obj)
+
+// for(var i = 0; i < 5; i++) {
+//   !function(i) {
+//     setTimeout(() => {console.log(i)}, i * 1000)
+//   }(i)
+// }
+
+// for(let i = 0; i<5; i++) {
+//   setTimeout(() => console.log(i), i*1000)
+// }
+
+for(var i = 1; i<= 5; i++) {
+  setTimeout(console.log.bind(console, i), i*1000)
 }
-
-let unboundBind = Function.prototype.bind
-let bind = Function.prototype.call.bind(unboundBind);
-
-let getCount = bind(obj.getCount, obj)
 
 
 

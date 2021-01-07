@@ -172,3 +172,5 @@ const bindFunc = Function.prototype.call.bind(Function.prototype.bind);
 Function.prototype.bind.call(args) === bindFunc
 ```
 
+再举个栗子。每隔一秒在控制台打印 1-5，看起来是道考察闭包的经典题目。
+
