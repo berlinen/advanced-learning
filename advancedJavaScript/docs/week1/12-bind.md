@@ -126,3 +126,43 @@ function demo(a,b) {
 
 demo(1,2)
 ```
+
+再举个类似的例子，比如说我们要添加事件到多个节点，for 循环当然没有任何问题，我们还可以 “剽窃” forEach 方法
+
+```js
+Array.prototype.forEach.call(document.querySelectorAll('input[type="button"]'), function(el){
+  el.addEventListener('click', fn);
+});
+```
+
+更进一步，我们可以用 bind 将函数封装的更好：
+
+```js
+var unboundForEach = Array.prototype.forEach
+  , forEach = Function.prototype.call.bind(unboundForEach);
+// Array.prototype.forEach.call(document.querySelectorAll('input[type="button"]'), function (el) {
+//   el.addEventListener('click', fn);
+// })
+
+forEach(document.querySelectorAll('input[type="button"]'), function (el) {
+  el.addEventListener('click', fn);
+});
+```
+同样类似的，我们可以将 x.y(z) 变成 y(x,z) 的形式
+
+
+```js
+var obj = {
+  num: 10,
+  getCount: function () {
+    return this.num
+  }
+}
+
+let unboundBind = Function.prototype.bind
+let bind = Function.prototype.call.bind(unboundBind);
+// Funtion.prototype.bind.call(obj.getCount, obj)
+
+let getCount = bind(obj.getCount, obj)
+```
+

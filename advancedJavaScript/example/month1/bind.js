@@ -69,15 +69,27 @@
 
 // console.log(constructor)
 
-function demo(a,b) {
-  console.log(arguments)
-  let unboundSlice = Array.prototype.slice;
-  let slice = Function.prototype.call.bind(unboundSlice);
-  let res = slice(arguments, 1)
-  console.log(res)
+// function demo(a,b) {
+//   console.log(arguments)
+//   let unboundSlice = Array.prototype.slice;
+//   let slice = Function.prototype.call.bind(unboundSlice);
+//   let res = slice(arguments, 1)
+//   console.log(res)
+// }
+
+// demo(1,2)
+
+var obj = {
+  num: 10,
+  getCount: function () {
+    return this.num
+  }
 }
 
-demo(1,2)
+let unboundBind = Function.prototype.bind
+let bind = Function.prototype.call.bind(unboundBind);
+
+let getCount = bind(obj.getCount, obj)
 
 
 
