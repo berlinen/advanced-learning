@@ -41,19 +41,44 @@
 // let p = new _Person(15);
 // console.log(p) //{ name: 'wx', age: 15 }
 
-let canvas = {
-  render: function () {
-    this.update()
-    this.draw()
-  },
+// let canvas = {
+//   render: function () {
+//     this.update()
+//     this.draw()
+//   },
 
-  update: function () {
-    console.log('update')
-  },
+//   update: function () {
+//     console.log('update')
+//   },
 
-  draw: function() {
-    console.log('draw')
-  }
+//   draw: function() {
+//     console.log('draw')
+//   }
+// }
+
+// setTimeout(canvas.render.bind(canvas), 1000)
+
+// const args = {"1": "a", "2": "b", "4": "d", length: 5}
+
+// const constructor = [].shift.call(args)
+
+// // let slice = Array.prototype.slice;
+
+// // slice.apply(args);
+// // slice(args, 1)
+
+// console.log(constructor)
+
+function demo(a,b) {
+  console.log(arguments)
+  let unboundSlice = Array.prototype.slice;
+  let slice = Function.prototype.call.bind(unboundSlice);
+  let res = slice(arguments, 1)
+  console.log(res)
 }
 
-setTimeout(canvas.render.bind(canvas), 1000)
+demo(1,2)
+
+
+
+

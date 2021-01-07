@@ -99,3 +99,18 @@ let canvas = {
 
 setTimeout(canvas.render.bind(canvas), 1000)
 ```
+
+### tip
+
+bind 还能做一些有意思的事情。
+
+通常来说，将一个类数组转为数组，我们会用 slice
+
+```js
+var slice = Array.prototype.slice;
+
+// slice.apply(arguments);
+// slice(arguments, 1);
+```
+
+bind 能让调用变的更加简单。
