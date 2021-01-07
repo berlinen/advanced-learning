@@ -47,3 +47,32 @@ console.log(list1) // [1,2,3]
 console.log(list2) // [37]
 console.log(list3) // [37,1,2,3]
 ```
+
+### new
+
+使用 bind 返回的结果还是个 function，是个 function 就可以被 new 运算符调用，那么结果呢？规范中说的很清楚了，当使用 new 操作符调用绑定函数时，bind 的第一个参数无效。
+
+```js
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+let _Person = Person.bind({});
+let p = new _Person('wx', 24); // Person { name: 'wx', age: 24 }
+
+console.log(p) // Person { name: 'wx', age: 24 }
+```
+
+我们也可以设置默认值（参考上一小节），原先提供的那些参数仍然会被前置到构造函数调用的前面。
+
+```js
+function Person (name, age) {
+  this.name = name
+  this.age = age
+}
+
+let _Person = Person.bind(null, 'wx');
+let p = new _Person(15);
+console.log(p) //{ name: 'wx', age: 15 }
+```
