@@ -174,3 +174,22 @@ Function.prototype.bind.call(args) === bindFunc
 
 再举个栗子。每隔一秒在控制台打印 1-5，看起来是道考察闭包的经典题目。
 
+```js
+// for(var i = 0; i < 5; i++) {
+//   !function(i) {
+//     setTimeout(() => {console.log(i)}, i * 1000)
+//   }(i)
+// }
+
+// for(let i = 0; i<5; i++) {
+//   setTimeout(() => console.log(i), i*1000)
+// }
+
+// for(var i = 1; i<= 5; i++) {
+//   setTimeout(console.log.bind(console, i), i*1000)
+// }
+
+for(var i = 1; i <= 5; i++) {
+  setTimeout((num) => console.log(num), i*1000, i)
+}
+```
