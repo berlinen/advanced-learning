@@ -147,6 +147,9 @@ var unboundForEach = Array.prototype.forEach
 forEach(document.querySelectorAll('input[type="button"]'), function (el) {
   el.addEventListener('click', fn);
 });
+
+const foreachFunc = Function.prototype.call.bind(Array.prototype.forEach);
+Array.prototype.forEach.call(args, () => {}) === foreachFunc(args, () => {})
 ```
 同样类似的，我们可以将 x.y(z) 变成 y(x,z) 的形式
 
@@ -164,5 +167,8 @@ let bind = Function.prototype.call.bind(unboundBind);
 // Funtion.prototype.bind.call(obj.getCount, obj)
 
 let getCount = bind(obj.getCount, obj)
+
+const bindFunc = Function.prototype.call.bind(Function.prototype.bind);
+Function.prototype.bind.call(args) === bindFunc
 ```
 
