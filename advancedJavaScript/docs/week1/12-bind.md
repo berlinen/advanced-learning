@@ -76,3 +76,26 @@ let _Person = Person.bind(null, 'wx');
 let p = new _Person(15);
 console.log(p) //{ name: 'wx', age: 15 }
 ```
+
+### 配合setTimeout
+
+什么时候容易丢失 this 指向？恩，setTimeout 是一个场景，很容易把 this 指向 window，当然，setInterval 也是一样。当使用对象的方法时，需要 this 引用对象，你可能需要显式地把 this 绑定到回调函数以便继续使用对象。
+
+```js
+let canvas = {
+  render: function () {
+    this.update()
+    this.draw()
+  },
+
+  update: function () {
+    console.log('update')
+  },
+
+  draw: function() {
+    console.log('draw')
+  }
+}
+
+setTimeout(canvas.render.bind(canvas), 1000)
+```

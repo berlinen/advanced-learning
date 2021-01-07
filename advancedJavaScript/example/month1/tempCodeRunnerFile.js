@@ -48,12 +48,12 @@ let canvas = {
   },
 
   update: function () {
-    console.log('update')
+
   },
 
   draw: function() {
-    console.log('draw')
+
   }
 }
 
-setTimeout(canvas.render.bind(canvas), 1000)
+setInterval(canvas.render.bind(canvas), 1000 / 60)
