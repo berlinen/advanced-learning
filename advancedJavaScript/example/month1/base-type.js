@@ -4,5 +4,5 @@ function isArray(obj) {
 
 function isObject(obj) {
   let type = typeof obj;
-  return type === 'function' || type === 'object' && ！!obj
+  return type === 'function' || type === 'object' && !obj
 }
