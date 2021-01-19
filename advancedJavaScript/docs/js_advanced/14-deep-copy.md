@@ -140,6 +140,85 @@ clone(a) // Maximum call stack size exceeded 直接死循环了有没有，/(ㄒ
 
 关于循环引用的问题解决思路有两种，一直是循环检测，一种是暴力破解，关于循环检测大家可以自己思考下；关于暴力破解我们会在下面的内容中详细讲解
 
+### 一行代码的深拷贝
+
+有些同学可能见过用系统自带的JSON来做深拷贝的例子，下面来看下代码实现
+
+```js
+function cloneJSON(source) {
+  return JSON.parse(JSON.stringify(source));
+}
+```
+
+其实我第一次简单这个方法的时候，由衷的表示佩服，其实利用工具，达到目的，是非常聪明的做法
+
+下面来测试下cloneJSON有没有溢出的问题，看起来cloneJSON内部也是使用递归的方式
+
+```js
+cloneJSON(createData(10000)); // Maximum call stack size exceeded
+```
+
+既然是用了递归，那循环引用呢？并没有因为死循环而导致栈溢出啊，原来是JSON.stringify内部做了循环引用的检测，正是我们上面提到破解循环引用的第一种方法：循环检测
+
+```js
+var a = {};
+a.a = a;
+
+cloneJSON(a) // Uncaught TypeError: Converting circular structure to JSON
+```
+
+### 破解递归爆栈
+
+其实破解递归爆栈的方法有两条路，第一种是消除尾递归，但在这个例子中貌似行不通，第二种方法就是干脆不用递归，改用循环，
+
+假设有如下的数据结构
 
 
+用循环遍历一棵树，需要借助一个栈，当栈为空时就遍历完了，栈里面存储下一个需要拷贝的节点
 
+首先我们往栈里放入种子数据，key用来存储放哪一个父元素的那一个子元素拷贝对象
+
+然后遍历当前节点下的子元素，如果是对象就放到栈里，否则直接拷贝
+
+```js
+function cloneLoop (x) {
+  let root = {}; // 根节点
+  let loopList = [
+    {
+      parent: root,
+      key: void 0,
+      data: x
+    }
+  ]
+
+  while(loopList.length) {
+    // 深度优先
+    const node = loopList.pop();
+    const parent = node.parent;
+    const key = node.key;
+    const data = node.data;
+
+    let res = parent;
+    if(typeof key !== undefined) {
+      res = parent[key] = {};
+    }
+
+    for(let k in data) {
+      if(data.hasOwnProperty(k)) {
+        if(Object.proto.toString.call(data[k]) === '[object Object]') {
+          loopList.push({
+            parent: res,
+            key: k,
+            data: data[k]
+          })
+        } else {
+          res = data[k];
+        }
+      }
+    }
+  }
+
+  return root;
+}
+```
+改用循环后，再也不会出现爆栈的问题了，但是对于循环引用依然无力应对
