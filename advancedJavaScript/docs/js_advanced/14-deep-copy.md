@@ -246,7 +246,7 @@ c.a1 === c.a2 // false
 
 引入一个数组uniqueList用来存储已经拷贝的数组，每次循环遍历时，先判断对象是否在uniqueList中了，如果在的话就不执行拷贝逻辑了
 ```js
-unction cloneLoop(x) {
+unction cloneForce(x) {
   const uniqueList = [] // 用来去重
   const root = {};
 
@@ -305,4 +305,74 @@ unction cloneLoop(x) {
 
   return root;
 }
+
+function find(arr, item) {
+    for(let i = 0; i < arr.length; i++) {
+        if (arr[i].source === item) {
+            return arr[i];
+        }
+    }
+
+    return null;
+}
 ```
+破解循环也有作用
+```js
+var a = {};
+a.a = a;
+
+cloneForce(a)
+```
+
+cloneForce有两个问题
+
+第一个问题，如果保持引用不是你想要的，那就不能用cloneForce了；
+
+第二个问题，cloneForce在对象数量很多时会出现很大的问题，如果数据量很大不适合使用cloneForce
+
+### 性能对比
+
+我们先来做实验，看数据，影响性能的原因有两个，一个是深度，一个是每层的广度，我们采用固定一个变量，只让一个变量变化的方式来测试性能
+
+测试的方法是在指定的时间内，深拷贝执行的次数，次数越多，证明性能越好
+
+下面的runTime是测试代码的核心片段，下面的例子中，我们可以测试在2秒内运行clone(createData(500, 1)的次数
+
+```js
+function runTime(fn, time) {
+    var stime = Date.now();
+    var count = 0;
+    while(Date.now() - stime < time) {
+        fn();
+        count++;
+    }
+
+    return count;
+}
+
+runTime(function () { clone(createData(500, 1)) }, 2000);
+```
+
+将上面的数据做成表格可以发现，一些规律
+
+随着深度变小，相互之间的差异在变小
+
+clone和cloneLoop的差别并不大
+
+cloneLoop > cloneForce > cloneJSON
+
+
+#### 我们先来分析下各个方法的时间复杂度问题，各个方法要做的相同事情，这里就不计算，比如循环对象，判断是否为对象
+
+clone时间 = 创建递归函数 + 每个对象处理时间
+
+cloneJSON时间 = 循环检测 + 每个对象处理时间 * 2 （递归转字符串 + 递归解析）
+
+cloneLoop时间 = 每个对象处理时间
+
+cloneForce时间 = 判断对象是否缓存中 + 每个对象处理时间
+
+cloneJSON的速度只有clone的50%，很容易理解，因为其会多进行一次递归时间
+
+cloneForce由于要判断对象是否在缓存中，而导致速度变慢，我们来计算下判断逻辑的时间复杂度，假设对象的个数是n，则其时间复杂度为O(n2)，对象的个数越多，cloneForce的速度会越慢
+
