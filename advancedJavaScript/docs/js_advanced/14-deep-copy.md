@@ -21,4 +21,31 @@ console.log(c.val, d.val) // 2, 2  全是2 因为c， d指向同一地址
 
 那么如何切断a和b之间的关系呢，可以拷贝一份a的数据，根据拷贝的层级不同可以分为浅拷贝和深拷贝，浅拷贝就是只进行一层拷贝，深拷贝就是无限层级拷贝
 
+```js
+
+var a1 = {b: {c: {}}};
+
+var a2 = shallowClone(a1); // 浅拷贝
+a2.b.c === a1.b.c // true
+
+var a3 = clone(a1); // 深拷贝
+a3.b.c === a1.b.c // false
+```
+
+浅拷贝的实现非常简单，而且还有多种方法，其实就是遍历对象属性的问题，这里只给出一种，如果看不懂下面的方法，或对其他方法感兴趣，可以看我的这篇文章
+
+```js
+function shallowClone(source) {
+  var target = {};
+  for(var i in source) {
+    if(source.hasOwnProperty(i)) {
+      target[i] = source[i];
+    }
+  }
+  return target;
+}
+```
+
+### 最简单的深拷贝
+
 

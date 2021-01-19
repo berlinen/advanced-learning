@@ -1,10 +1,18 @@
-var a = 1;
-var b = a;
-a = 2;
-console.log(a, b); // 2, 1 a,b指向同一数据
 
-// 引用类型
-var c = { val: 1 };
-var d = c;
-c.val = 2;
-console.log(c.val, d.val) // 2, 2  全是2 因为c， d指向同一地址
+var a1 = {b: {c: {}}};
+
+var a2 = shallowClone(a1); // 浅拷贝
+a2.b.c === a1.b.c // true
+
+var a3 = clone(a1); // 深拷贝
+a3.b.c === a1.b.c // false
+
+function shallowClone(source) {
+  var target = {};
+  for(var i in source) {
+    if(source.hasOwnProperty(i)) {
+      target[i] = source[i];
+    }
+  }
+  return target;
+}
