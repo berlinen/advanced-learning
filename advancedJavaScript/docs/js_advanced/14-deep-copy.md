@@ -182,6 +182,9 @@ cloneJSON(a) // Uncaught TypeError: Converting circular structure to JSON
 
 ```js
 function cloneLoop (x) {
+  // =============
+  const uniqueList = []; // 用来去重
+  // =============
   let root = {}; // 根节点
   let loopList = [
     {
@@ -222,3 +225,84 @@ function cloneLoop (x) {
 }
 ```
 改用循环后，再也不会出现爆栈的问题了，但是对于循环引用依然无力应对
+
+### 破解循环引用
+
+有没有一种办法可以破解循环应用呢？别着急，我们先来看另一个问题，上面的三种方法都存在的一个问题就是引用丢失，这在某些情况下也许是不能接受的
+
+举个例子，假如一个对象a，a下面的两个键值都引用同一个对象b，经过深拷贝后，a的两个键值会丢失引用关系，从而变成两个不同的对象，o(╯□╰)o
+
+```js
+var b = {};
+var a = {a1: b, a2: b};
+
+a.a1 === a.a2 // true
+
+var c = clone(a);
+c.a1 === c.a2 // false
+```
+
+如果我们发现个新对象就把这个对象和他的拷贝存下来，每次拷贝对象前，都先看一下这个对象是不是已经拷贝过了，如果拷贝过了，就不需要拷贝了，直接用原来的，这样我们就能够保留引用关系了
+
+引入一个数组uniqueList用来存储已经拷贝的数组，每次循环遍历时，先判断对象是否在uniqueList中了，如果在的话就不执行拷贝逻辑了
+```js
+unction cloneLoop(x) {
+  const uniqueList = [] // 用来去重
+  const root = {};
+
+  // 栈
+  const looplist = [
+    {
+      parent: root,
+      key: void 0,
+      data: x
+    }
+  ];
+
+  while(looplist.length) {
+    // 深度优先
+    const node = looplist.pop();
+    const parent = node.parent;
+    const key = node.key;
+    const data = node.data;
+
+    // 初始化赋值目标，key为undefined则拷贝到父元素，否则拷贝到子元素
+    let res = parent;
+    if(typeof key !== undefined) {
+      res = parent[key] = {};
+    }
+    // ====================处理重复拷贝
+    // 数据已经存在
+    let uniqueData = find(uniqueList, data);
+    if(uniqueData) {
+      parent[key] = uniqueData.target;
+      continue; // 中断本次循环
+    }
+
+    // 数据不存在
+    // 保存元数据，在拷贝数据中对应的引用
+    uniqueList.push({
+      source: data,
+      target: res
+    })
+    // ====================处理重复拷贝
+
+    for(let k in data) {
+      if(data.hasOwnProperty(k)) {
+        if(typeof data[k] === 'object') {
+          // 下一次循环
+          looplist.push({
+            parent: res,
+            key: k,
+            data: data[k]
+          })
+        } else {
+          res[k] = data[k]
+        }
+      }
+    }
+  }
+
+  return root;
+}
+```

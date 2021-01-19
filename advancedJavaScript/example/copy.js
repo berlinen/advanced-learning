@@ -77,6 +77,7 @@ var obj = {
 }
 
 function cloneLoop(x) {
+  const uniqueList = [] // 用来去重
   const root = {};
 
   // 栈
@@ -98,13 +99,23 @@ function cloneLoop(x) {
     // 初始化赋值目标，key为undefined则拷贝到父元素，否则拷贝到子元素
     let res = parent;
     if(typeof key !== undefined) {
-      console.log('>>>>>>>key>>>>', key)
-      console.log('>>>>>>>parent1>>>>', parent)
       res = parent[key] = {};
-      console.log('>>>>>>>res>>>>', res)
-      console.log('>>>>>>>parent2>>>>', parent)
-      console.log('>>>>>>>STEP>>>>>>>>>>>>',)
     }
+    // ====================处理重复拷贝
+    // 数据已经存在
+    let uniqueData = find(uniqueList, data);
+    if(uniqueData) {
+      parent[key] = uniqueData.target;
+      continue; // 中断本次循环
+    }
+
+    // 数据不存在
+    // 保存元数据，在拷贝数据中对应的引用
+    uniqueList.push({
+      source: data,
+      target: res
+    })
+    // ====================处理重复拷贝
 
     for(let k in data) {
       if(data.hasOwnProperty(k)) {
