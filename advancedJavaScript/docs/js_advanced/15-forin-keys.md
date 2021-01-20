@@ -32,3 +32,34 @@ var child = Object.create(parent, {
 
 console.log('answer')
 ```
+
+### for in
+
+for in是es3中就存在，最早用来遍历对象（集合）的方法。
+
+```js
+for(var key in child) {
+  console.log(key)
+}
+
+// a
+// b
+```
+
+从输出可以看出，for in会输出自身以及原型链上可枚举的属性。
+
+注意：不同的浏览器对for in属性输出的顺序可能不同。
+
+如果仅想输出自身的属性可以借助 hasOwnProperty。可以过滤掉原型链上的属性。
+
+```js
+for(var key in child) {
+  if(child.hasOwnProperty(key)) {
+    console.log(key);
+  }
+}
+
+// b
+```
+
+上面的代码，仅输出了child自己的可枚举属性b，而没有输出原型parent中的属性。
