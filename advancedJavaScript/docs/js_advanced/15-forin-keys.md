@@ -63,3 +63,22 @@ for(var key in child) {
 ```
 
 上面的代码，仅输出了child自己的可枚举属性b，而没有输出原型parent中的属性。
+
+### object keys
+
+Object.keys是es5中新增的方法，用来获取对象自身可枚举的属性键。
+
+```js
+console.log(Object.keys(child))
+ // ["b"]
+ ```
+
+ ### Object.getOwnPropertyNames⑤
+
+ Object.getOwnPropertyNames也是es5中新增的方法，用来获取对象自身的全部属性名。
+
+ ```js
+ console.log(Object.getOwnPropertyNames(child));
+// > ["b", "c"]
+```
+
