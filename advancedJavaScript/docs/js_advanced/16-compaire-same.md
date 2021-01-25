@@ -13,3 +13,14 @@
 // 至于原因可以参考上面的链接
 if (a === b) return a !== 0 || 1 / a === 1 / b;
 ```
+
+接下去的情况，也就是 a !== b 的情况了。
+
+如果 a 和 b 中有一个是 null 或者 undefined，那么可以特判下，不用继续比较了。源码实现：
+
+```js
+// A strict comparison is necessary because `null == undefined`.
+// 如果 a 和 b 有一个为 null（或者 undefined）
+// 判断 a === b
+if (a == null || b == null) return a === b;
+```
