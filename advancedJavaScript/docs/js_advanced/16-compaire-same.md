@@ -24,3 +24,65 @@ if (a === b) return a !== 0 || 1 / a === 1 / b;
 // 判断 a === b
 if (a == null || b == null) return a === b;
 ```
+
+如果类型是 RegExp 和 String，我们可以将 a 和 b 分别转为字符串进行比较（如果是 String 就已经是字符串了），举个栗子：
+
+```js
+var a = /a/;
+var b = new RegExp("a");
+
+console.log(_isEqual(a, b));
+```
+其实它在 underscore 内部是这样判断的：
+
+```js
+var a = /a/;
+var b = new RegExp("a");
+
+var _a = '' + a; // => /a/
+var _b = '' + b; // => /a/
+
+console.log(_a === _b); // => true
+```
+
+如果是 Number 类型呢？这里又有个 special case，就是 NaN！这里规定，NaN 仅和 NaN 相同，与别的 Number 类型均 unequal。这里我们将引用类型均转为基本类型，看如下代码：
+
+```js
+var a = new Number(1);
+console.log(+a); // 1
+```
+
+没错，加个 + 就解决了，其他的不难理解，都在注释里了。
+
+```js
+// `NaN`s are equivalent, but non-reflexive.
+// Object(NaN) is equivalent to NaN
+// 如果 +a !== +a
+// 那么 a 就是 NaN
+// 判断 b 是否也是 NaN 即可
+if (+a !== +a) return +b !== +b;
+
+// An `egal` comparison is performed for other numeric values.
+// 排除了 NaN 干扰
+// 还要考虑 0 的干扰
+// 用 +a 将 Number() 形式转为基本类型
+// 如果 a 为 0，判断 1 / +a === 1 / b
+// 否则判断 +a === +b
+return +a === 0 ? 1 / +a === 1 / b : +a === +b;
+
+// 如果 a 为 Number 类型
+// 要注意 NaN 这个 special number
+// NaN 和 NaN 被认为 equal
+```
+
+接下来我们看 Date 和 Boolean 两个类型。跟 Number 类型相似，它们也可以用 + 转化为基本类型的数字！看下面代码：
+
+```js
+var a = new Date();
+var b = true;
+var c = new Boolean(false);
+
+console.log(+a); // 1464180857222
+console.log(+b); // 1
+console.log(+c); // 0
+```
