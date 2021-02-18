@@ -1,66 +1,145 @@
+/**
+ * yuanxin
+ */
+
+// (function () {
+// 	// 准备资源 汪洋
+	// const context = document.getElementById('content').getContext('2d');
+	// const heroImg = new Image();
+
+// 	// 画图 袁鑫
+// 	heroImg.onload = function () {
+// 		var imgPos = {
+// 			x: 0,
+// 			y: 0,
+// 			width: 32,
+// 			height: 32
+// 		};
+
+// 		var rect = {
+// 			x: 0,
+// 			y: 0,
+// 			width: 40,
+// 			height: 40
+// 		};
+
+// 		context
+// 			.drawImage(
+// 				heroImg,
+// 				imgPos.x,
+// 				imgPos.y,
+// 				imgPos.width,
+// 				imgPos.height,
+// 				rect.x,
+// 				rect.y,
+// 				rect.width,
+// 				rect.height
+// 			);
+// 	};
+
+// 	heroImg.src = './hero.png';
+// })();
+
+
+
 (function () {
-  function prepare() {
-    const context = document.getElementById('content').getContext('2d');
-    const heroImg = new Image();
-    let loaded = false;
-    return {
-      /**
-       *
-       * @param {Function} [callback] - 当准备好之后调用的回调函数
-       */
-      getResource(callback) {
-        if(loaded) {
-          callback && callback(context, heroImg);
-          return;
-        }
-        heroImg.onload = function () {
-          callback && callback(context, heroImg);
-          loaded = true;
-        };
-        heroImg.src = './hero.png';
-      }
-    };
-  }
+	// 我是汪洋老师
+	function prepare() {
 
-  // 画图
-  function drawHero(context, heroImg, {initX, initY}) {
-    var imgPos = {
-      x: 0,
-      y: 0,
-      width: 32,
-      height: 32
-    };
+		const imgTask = (img, src) => {
+			return new Promise(function (resolve, reject) {
+				img.onload = resolve;
+				img.onerror = reject;
+				img.src = src;
+			});
+		};
 
-    var rect = {
-      x: initX,
-      y: initY,
-      width: 40,
-      height: 40
-    };
+		const context = document.getElementById('content').getContext('2d');
+		const heroImg = new Image();
+		const allSpriteImg = new Image();
 
-    context
-        .drawImage(
-          heroImg,
-          imgPos.x,
-          imgPos.y,
-          imgPos.width,
-          imgPos.height,
-          rect.x,
-          rect.y,
-          rect.width,
-          rect.height,
-        );
-  }
+		const allresourceTask = Promise.all([
+			imgTask(heroImg, './hero.png'),
+			imgTask(allSpriteImg, './all.jpg'),
+		]);
 
-  var resourceManager = prepare();
-  resourceManager.getResource(function (context, heroImg) {
-    drawHero(context, heroImg, {initX: 0, initY: 0});
-  });
+		return {
+			/**
+			 * @param {Function} [callback] - 当准备好了之后要调用的回掉函数
+			 */
+			getResource(callback) {
+				allresourceTask.then(function () {
+					callback && callback(context, heroImg, allSpriteImg);
+				});
+			}
+		};
+	}
 
-  document.getElementById('create').addEventListener('click', function () {
-    resourceManager.getResource(function (context, heroImg) {
-      drawHero(context, heroImg, {initX: Math.random() * 200, initY: Math.random() * 200});
-    });
-  });
 
-})()
+	// 我是袁鑫老师
+	function drawHero(context, heroImg, allSpriteImg) {
+
+		var draw = function () {
+			this.context
+				.drawImage(
+					this.img,
+					this.imgPos.x,
+					this.imgPos.y,
+					this.imgPos.width,
+					this.imgPos.height,
+					this.rect.x,
+					this.rect.y,
+					this.rect.width,
+					this.rect.height
+				);
+		}
+
+		var hero = {
+			img: heroImg,
+			context: context,
+			imgPos: {
+				x: 0,
+				y: 0,
+				width: 32,
+				height: 32
+			},
+
+			rect: {
+				x: 0,
+				y: 0,
+				width: 40,
+				height: 40
+			},
+
+			draw: draw
+		};
+
+		var monster = {
+			img: allSpriteImg,
+			context: context,
+			imgPos: {
+				x: 858,
+				y: 529,
+				width: 32,
+				height: 32
+			},
+
+			rect: {
+				x: 100,
+				y: 100,
+				width: 40,
+				height: 40
+			},
+
+			draw: draw
+		};
+
+		hero.draw();
+		monster.draw();
+	}
+
+	var resourceManager = prepare();
+	resourceManager.getResource(function (context, heroImg, allSpriteImg) {
+		drawHero(context, heroImg, allSpriteImg);
+	});
+})();
