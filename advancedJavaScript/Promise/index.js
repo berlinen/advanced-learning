@@ -65,19 +65,9 @@ class MyPromise {
   };
   // then
   then = (onFulfilled, onRejected) => {
-    // // 判断状态
-    // if(this.status === FULFILLED) {
-    //   // 调用成功回调，并且把值返回
-    //   onFulfilled(this.value)
-    // } else if(this.status === REJECTED) {
-    //   // 调用失败回调，把原因返回
-    //   onRejected(this.reason);
-    // } else if(this.status === PENDING) {
-    //   // 因为不知道后面状态的变化情况，所以将成功回调和失败回调存储起来
-    //   // 等到执行成功失败函数的时候再传递
-    //   this.onFulfilledCallback.push(onFulfilled);
-    //   this.onRejectedCallback.push(onRejected);
-    // }
+    // 如果不传就使用默认函数
+    onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : value => value;
+    onRejected = typeof onRejected === 'function' ? onRejected : reason => { throw new Error(reason) };
     // 为了链式调用这里直接创建一个Mypromise，并return出去
     const promise2 = new MyPromise((resolve, reject) => {
       // 这里的内容在执行器中会立即执行
@@ -140,6 +130,23 @@ class MyPromise {
 
     return promise2;
   }
+  // resolve 静态方法
+  static resolve(parameter) {
+    // 如果传入 MyPromise 就直接返回
+    if(parameter instanceof MyPromise) {
+      return parameter;
+    }
+    // 转成常规方式
+    return new MyPromise(resolve => {
+      resolve(parameter);
+    })
+  }
+  // reject 静态方法
+  static reject(reason) {
+    return new MyPromise((resolve, reject) => {
+      reject(reason);
+    })
+  }
 }
 
 function resolvePromise(promise2, x, resolve, reject) {
@@ -147,9 +154,14 @@ function resolvePromise(promise2, x, resolve, reject) {
    if(promise2 === x) {
     return reject(new TypeError('Chaining cycle detected for promise #<Promise>'));
    }
+   // 判断x是不是 MyPromise 实例对象
    if(x instanceof MyPromise) {
+    // 执行 x，调用 then 方法，目的是将其状态变为 fulfilled 或者 rejected
+    // x.then(value => resolve(value), reason => reject(reason))
+    // 简化之后
     x.then(resolve, reject);
    } else {
+     // 普通值
      resolve(x);
    }
 }
@@ -171,26 +183,18 @@ function resolvePromise(promise2, x, resolve, reject) {
 
 
 
-const promise = new MyPromise((resolve, reject) => {
-  resolve('success')
-  // throw new Error('执行器错误')
+
+MyPromise.resolve().then(() => {
+  console.log(0);
+  return MyPromise.resolve(4);
+}).then((res) => {
+  console.log(res)
 })
 
-// 第一个then方法中的错误要在第二个then方法中捕获到
-promise.then(value => {
-console.log(1)
-console.log('resolve', value)
-throw new Error('then error')
-}, reason => {
-console.log(2)
-console.log(reason.message)
-}).then(value => {
-console.log(3)
-console.log(value);
-}, reason => {
-console.log(4)
-console.log(reason.message)
-})
+
+
+
+
 
 
 
