@@ -59,43 +59,91 @@ class MyPromise {
   };
   // then
   then = (onFulfilled, onRejected) => {
-    // 判断状态
-    if(this.status === FULFILLED) {
-      // 调用成功回调，并且把值返回
-      onFulfilled(this.value)
-    } else if(this.status === REJECTED) {
-      // 调用失败回调，把原因返回
-      onRejected(this.reason);
-    } else if(this.status === PENDING) {
-      // 因为不知道后面状态的变化情况，所以将成功回调和失败回调存储起来
-      // 等到执行成功失败函数的时候再传递
-      this.onFulfilledCallback.push(onFulfilled);
-      this.onRejectedCallback.push(onRejected);
-    }
+    // // 判断状态
+    // if(this.status === FULFILLED) {
+    //   // 调用成功回调，并且把值返回
+    //   onFulfilled(this.value)
+    // } else if(this.status === REJECTED) {
+    //   // 调用失败回调，把原因返回
+    //   onRejected(this.reason);
+    // } else if(this.status === PENDING) {
+    //   // 因为不知道后面状态的变化情况，所以将成功回调和失败回调存储起来
+    //   // 等到执行成功失败函数的时候再传递
+    //   this.onFulfilledCallback.push(onFulfilled);
+    //   this.onRejectedCallback.push(onRejected);
+    // }
     // 为了链式调用这里直接创建一个Mypromise，并return出去
+    const promise2 = new MyPromise((resolve, reject) => {
+      // 这里的内容在执行器中会立即执行
+      if(this.status === FULFILLED) {
+        // 创建一个微任务等待promise2完成初始化
+        queueMicrotask(() => {
+          // 获取成功回调函数执行的结果
+          const x = onFulfilled(this.value);
+          // resolvePromise 集中处理，将 promise2 传入
+          resolvePromise(promise2, x, resolve, reject);
+        })
+      } else if(this.status === REJECTED) {
+        onRejected(this.reason);
+      } else if(this.status === PENDING) {
+        this.onFulfilledCallback.push(onFulfilled);
+        this.onRejectedCallback.push(onRejected);
+      }
+    })
+
+    return promise2;
   }
 }
 
+function resolvePromise(promise2, x, resolve, reject) {
+   // 如果相等了，说明return的是自己，抛出类型错误并返回
+   if(promise2 === x) {
+    return reject(new TypeError('Chaining cycle detected for promise #<Promise>'));
+   }
+   if(x instanceof MyPromise) {
+    x.then(resolve, reject);
+   } else {
+     resolve(x);
+   }
+}
+
+// function resolvePromise(x, resolve, reject) {
+//    // 判断x是不是 MyPromise 实例对象
+//    if(x instanceof MyPromise) {
+//      // 执行 x，调用 then 方法，目的是将其状态变为 fulfilled 或者 rejected
+//      // x.then(value => resolve(value), reason => reject(reason))
+//      // 简化之后
+//      x.then(resolve, reject);
+//    } else {
+//      // 普通值
+//      resolve(x)
+//    }
+// }
+
+// test.js
 
 
 const promise = new MyPromise((resolve, reject) => {
-  // 目前这里只处理同步的问题
-  resolve('success')
+    resolve('success')
 })
 
-function other () {
-  return new MyPromise((resolve, reject) =>{
-    resolve('other')
-  })
-}
-promise.then(value => {
-  console.log(1)
-  console.log('resolve', value)
-  return other()
-}).then(value => {
+// 这个时候将promise定义一个p1，然后返回的时候返回p1这个promise
+const p1 = promise.then(value => {
+   console.log(1)
+   console.log('resolve', value)
+   return p1
+})
+
+// 运行的时候会走reject
+p1.then(value => {
   console.log(2)
   console.log('resolve', value)
+}, reason => {
+  console.log(3)
+  console.log(reason.message)
 })
+
+
 
 
 
