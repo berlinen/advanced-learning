@@ -9,7 +9,13 @@ class MyPromise {
   constructor(executor) {
     // executor 是一个执行器，进入会立即执行
     // 传入resolve和reject方法
-    executor(this.resolve, this.reject);
+    // 错误捕获
+    try {
+      executor(this.resolve, this.reject)
+    } catch (error) {
+      // 如果有错误，就直接执行 reject
+      this.reject(error)
+    }
   }
   // 储存状态的变量初始值是 pending
   status = PENDING;
@@ -78,16 +84,57 @@ class MyPromise {
       if(this.status === FULFILLED) {
         // 创建一个微任务等待promise2完成初始化
         queueMicrotask(() => {
+         // 捕获error
+         try {
           // 获取成功回调函数执行的结果
           const x = onFulfilled(this.value);
           // resolvePromise 集中处理，将 promise2 传入
           resolvePromise(promise2, x, resolve, reject);
+         } catch(error) {
+           reject(error)
+         }
         })
       } else if(this.status === REJECTED) {
-        onRejected(this.reason);
+        // 调用失败回调，并且把原因返回
+        // 创建一个微任务等待 promise2 完成初始化
+        queueMicrotask(() => {
+         try {
+          // 调用失败回调，并且把原因返回
+          const x = onRejected(this.reason);
+          // 传入 resolvePromise 集中处理
+          resolvePromise(promise2, x, resolve, reject)
+         } catch (error) {
+           reject(error);
+         }
+        })
       } else if(this.status === PENDING) {
-        this.onFulfilledCallback.push(onFulfilled);
-        this.onRejectedCallback.push(onRejected);
+         // 等待
+         // 因为不知道后面状态的变化情况，所以将成功回调和失败回调存储起来
+         // 等到执行成功失败函数的时候再传递
+         this.onFulfilledCallback.push(() => {
+          queueMicrotask(() => {
+            try {
+             // 获取成功回调函数的执行结果
+             const x = onFulfilled(this.value);
+             // 传入 resolvePromise 集中处理
+             resolvePromise(promise2, x, resolve, reject);
+            } catch(error) {
+              reject(error);
+            }
+          })
+         });
+         this.onRejectedCallback.push(() => {
+           queueMicrotask(() => {
+             try {
+              // 获取成功回调函数的执行结果
+              const x = onRejected(this.reason);
+              // 传入 resolvePromise 集中处理
+              resolvePromise(promise2, x, resolve, reject);
+             } catch (error) {
+               reject(error)
+             }
+           })
+         })
       }
     })
 
@@ -123,25 +170,32 @@ function resolvePromise(promise2, x, resolve, reject) {
 // test.js
 
 
+
 const promise = new MyPromise((resolve, reject) => {
-    resolve('success')
+  resolve('success')
+  // throw new Error('执行器错误')
 })
 
-// 这个时候将promise定义一个p1，然后返回的时候返回p1这个promise
-const p1 = promise.then(value => {
-   console.log(1)
-   console.log('resolve', value)
-   return p1
-})
-
-// 运行的时候会走reject
-p1.then(value => {
-  console.log(2)
-  console.log('resolve', value)
+// 第一个then方法中的错误要在第二个then方法中捕获到
+promise.then(value => {
+console.log(1)
+console.log('resolve', value)
+throw new Error('then error')
 }, reason => {
-  console.log(3)
-  console.log(reason.message)
+console.log(2)
+console.log(reason.message)
+}).then(value => {
+console.log(3)
+console.log(value);
+}, reason => {
+console.log(4)
+console.log(reason.message)
 })
+
+
+
+
+
 
 
 
