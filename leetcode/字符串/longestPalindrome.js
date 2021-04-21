@@ -21,28 +21,28 @@
 let str = "baaacd";
 
 function longestPalindrome(s) {
-  if(s.length === 1) return s;
-  let maxRes = 0;
+  if(s.length <= 1) return s;
   let maxStr = '';
+  let maxRes = 0;
   for(let i = 0; i < s.length; i++) {
     let str1 = palindrome(s, i, i);
-    let str2 = palindrome(s, i, i+1)
+    let str2 = palindrome(s, i, i+1);
     if(str1.length > maxRes) {
       maxRes = str1.length;
-      maxStr = str1
+      maxStr = str1;
     }
     if(str2.length > maxRes) {
       maxRes = str2.length;
-      maxStr = str2
+      maxStr = str2;
     }
   }
   return maxStr;
 }
 
 function palindrome(s, l, r) {
-  while(l >= 0 && r < s.length && s[r] === s[l]) {
+  while(l >= 0 && r < s.length && s[l] === s[r]) {
     l--;
-    r++;
+    r++
   }
   return s.slice(l+1, r);
 }
