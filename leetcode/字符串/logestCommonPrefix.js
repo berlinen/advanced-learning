@@ -30,6 +30,8 @@ function logestCommonPrefix(strs) {
 }
 
 function twoStrLongestCommonPrefix(s, t) {
+  console.log('s====', s)
+  console.log('t====', t)
   let i = 0;
   let j = 0;
   let cnt = 0;
